@@ -3,21 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"github.com/undine-project/undine/src/builder"
-	"gopkg.in/yaml.v3"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
+	"github.com/undine-project/undine/src/builder"
+	"github.com/undine-project/undine/src/config"
 )
 
 var watchFlag = flag.Bool("watch", false, "Watch for changes in the diagram.md file")
-
-type config struct {
-	TemplatePath string                   `yaml:"templatePath"`
-	Files        []builder.FileDefinition `yaml:"files"`
-}
 
 func main() {
 	flag.Parse()
@@ -31,7 +28,7 @@ func main() {
 	}
 
 	files := c.Files
-	files = append(files, builder.FileDefinition{
+	files = append(files, config.File{
 		Name:  "template",
 		Path:  c.TemplatePath,
 		Title: "Template",
@@ -100,32 +97,20 @@ func main() {
 	}
 }
 
-func loadConfig() config {
-	configFile := "docs-config.yaml"
+func loadConfig() *config.Config {
+	viper.SetConfigName("docs-config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 
-	yamlFile, err := os.Open(configFile)
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal(err)
 	}
-	defer func(yamlFile *os.File) {
-		_ = yamlFile.Close()
-	}(yamlFile)
 
-	c := config{}
-	yamlDecoder := yaml.NewDecoder(yamlFile)
-	err = yamlDecoder.Decode(&c)
+	var cfg config.Config
+	err := viper.Unmarshal(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if c.TemplatePath == "" {
-		panic("template path is empty")
-	}
-
-	_, err = os.Stat(c.TemplatePath)
-	if err != nil {
-		panic(fmt.Sprintf("template file %s doesn't exist", c.TemplatePath))
-	}
-
-	return c
+	return &cfg
 }

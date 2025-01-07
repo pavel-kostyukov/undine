@@ -2,21 +2,23 @@ package builder
 
 import (
 	"bufio"
-	"github.com/cespare/xxhash/v2"
-	"github.com/fsnotify/fsnotify"
 	"iter"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/cespare/xxhash/v2"
+	"github.com/fsnotify/fsnotify"
+	"github.com/undine-project/undine/src/config"
 )
 
 type SourceProcessor struct {
-	files   map[string]FileDefinition
+	files   map[string]config.File
 	watcher *fsnotify.Watcher
 }
 
-func NewSourceProcessor(filePaths []FileDefinition, watcher *fsnotify.Watcher) *SourceProcessor {
-	definitions := make(map[string]FileDefinition, len(filePaths))
+func NewSourceProcessor(filePaths []config.File, watcher *fsnotify.Watcher) *SourceProcessor {
+	definitions := make(map[string]config.File, len(filePaths))
 	for _, filePath := range filePaths {
 		definitions[filePath.Path] = filePath
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/undine-project/undine/src/config"
 )
 
 type FileGenerator struct {
@@ -14,7 +16,7 @@ type FileGenerator struct {
 	graphsHtml   string
 }
 
-func NewFileGenerator(templatePath string, resultPath string, devMode bool, fileDefs []FileDefinition) *FileGenerator {
+func NewFileGenerator(templatePath string, resultPath string, devMode bool, fileDefs []config.File) *FileGenerator {
 	var tabs, graphs string
 	for _, fileDef := range fileDefs {
 		if fileDef.Name != "template" {
